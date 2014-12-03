@@ -7,7 +7,7 @@ echo -n "Installing fig............ "
 if [ -f "/opt/bin/fig" ]; then
 	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
 else
-	curl -sSL https://github.com/docker/fig/releases/download/0.5.2/linux > /opt/bin/fig
+	curl -sSL https://github.com/docker/fig/releases/download/1.0.1/fig-Linux-x86_64 > /opt/bin/fig
 	chmod +x /opt/bin/fig
 	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
@@ -29,8 +29,7 @@ echo -n "Installing docker-enter... "
 if [ -f "/opt/bin/docker-enter" ]; then
 	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
 else
-	curl -sSL https://raw.githubusercontent.com/harbur/coreos-init/master/scripts/docker-enter > /opt/bin/docker-enter
-	chmod +x /opt/bin/docker-enter
+	docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter
 	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
 

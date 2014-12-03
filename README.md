@@ -9,11 +9,15 @@ This is a script for preparing CoreOS systems automatically. It features the fol
 * It installs [btrfs-swapon](https://github.com/sebastian-philipp/btrfs-swapon)
 * It creates 2Gb swapfile
 
+This will expect you to load a valid .dockercfg for the core user with your cloud-config.
+
+
 To use it, directly on new CoreOS instances:
 
 <pre>
-\curl -sSL https://raw.githubusercontent.com/harbur/coreos-init/master/install | sudo bash
+\curl -sSL https://raw.githubusercontent.com/guruvan/coreos-init/master/install | sudo bash
 </pre>
+
 
 Output will be:
 

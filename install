@@ -38,7 +38,7 @@ echo -n "Installing btrfs-swapon... "
 if [ -f "/opt/bin/btrfs-swapon" ]; then
 	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
 else
-	curl -sSL https://raw.githubusercontent.com/harbur/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
+	curl -sSL https://raw.githubusercontent.com/guruvan/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
 	chmod +x /opt/bin/btrfs-swapon
 	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi

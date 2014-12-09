@@ -39,7 +39,9 @@ if [ -d /opt/tmp ] ; then
         echo "/opt/tmp found installing ext4fs swapfile"
         #and, for real, if we swap more than 1GB we r doin it wrong 
         #swap is for unexpected events, and long long running idle stuff
+        #we should be using encrypted swap for later applications - next iteration
         dd if=/dev/zero of=/opt/tmp/swapfile bs=16M count=64
+        mkswap /opt/tmp/swapfile && swapon /opt/tmp/swapfile
         echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 # Install btrfs-swapon
 fi

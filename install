@@ -32,15 +32,26 @@ else
 	docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter
 	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
-
+# check for /opt/tmp which is expected to be emphemeral0 
+# on amzazon instances that support it. 
+#
+if [ -d /opt/tmp ] ; then
+        echo "/opt/tmp found installing ext4fs swapfile"
+        #and, for real, if we swap more than 1GB we r doin it wrong 
+        #swap is for unexpected events, and long long running idle stuff
+        dd if=/dev/zero of=/opt/tmp/swapfile bs=16M count=64
+        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 # Install btrfs-swapon
-echo -n "Installing btrfs-swapon... "
-if [ -f "/opt/bin/btrfs-swapon" ]; then
-	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
-else
-	curl -sSL https://raw.githubusercontent.com/guruvan/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
-	chmod +x /opt/bin/btrfs-swapon
-	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+fi
+if [ ! -f /opt/tmp/swapfile ] ;then
+       echo -n "Installing btrfs-swapon... "
+       if [ -f "/opt/bin/btrfs-swapon" ]; then
+             echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
+        else
+	     curl -sSL https://raw.githubusercontent.com/guruvan/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
+	     chmod +x /opt/bin/btrfs-swapon
+             echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+        fi
 fi
 
 # Create 2Gb swapfile

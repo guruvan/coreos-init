@@ -52,13 +52,14 @@ if [ ! -f /opt/tmp/swapfile ] ;then
 	     chmod +x /opt/bin/btrfs-swapon
              echo "[$(tput setaf 2) OK $(tput sgr 0)]"
         fi
-fi
+
 
 # Create 2Gb swapfile
-echo -n "Creating swapfile......... "
-if [ -f "/swapfile" ]; then
-	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
-else
-	btrfs-swapon 2147483648 /swapfile > /dev/null
-	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+	echo -n "Creating swapfile......... "
+	if [ -f "/swapfile" ]; then
+		echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
+	else
+		btrfs-swapon 2147483648 /swapfile > /dev/null
+		echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+	fi
 fi

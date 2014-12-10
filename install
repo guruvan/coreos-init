@@ -35,8 +35,17 @@ fi
 # check for /opt/tmp which is expected to be emphemeral0 
 # on amzazon instances that support it. 
 #
-if [ -d /opt/tmp ] ; then
-        echo "/opt/tmp found installing ext4fs swapfile"
+if [ -f /dev/xvdb ] ; then
+        echo "For now we assume that xvdb means AWS, and we haz emphemeral0"
+        #let's hang out for a bit till we see /opt/tmp
+        ot=0
+        until [ ${ot} -eq 1 ] ; do
+           if [ -d /opt/tmp ] ; then
+              ot=1
+              echo "Not here yet"
+           fi
+           sleep .3
+        done
         #and, for real, if we swap more than 1GB we r doin it wrong 
         #swap is for unexpected events, and long long running idle stuff
         #we should be using encrypted swap for later applications - next iteration
@@ -50,7 +59,7 @@ if [ ! -f /opt/tmp/swapfile ] ;then
        if [ -f "/opt/bin/btrfs-swapon" ]; then
              echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
         else
-	     curl -sSL https://raw.githubusercontent.com/guruvan/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
+	     curl -ksSL https://raw.githubusercontent.com/guruvan/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
 	     chmod +x /opt/bin/btrfs-swapon
              echo "[$(tput setaf 2) OK $(tput sgr 0)]"
         fi

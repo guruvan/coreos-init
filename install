@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 mkdir -p /opt/bin/
 
@@ -35,14 +35,14 @@ fi
 # check for /opt/tmp which is expected to be emphemeral0 
 # on amzazon instances that support it. 
 #
-if [ -f /dev/xvdb ] ; then
+if [ -b /dev/xvdb ] ; then
         echo "For now we assume that xvdb means AWS, and we haz emphemeral0"
         #let's hang out for a bit till we see /opt/tmp
         ot=0
         until [ ${ot} -eq 1 ] ; do
+           echo "/opt/tmp isn't here yet"
            if [ -d /opt/tmp ] ; then
               ot=1
-              echo "Not here yet"
            fi
            sleep .3
         done

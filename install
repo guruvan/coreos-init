@@ -82,12 +82,15 @@ echo -n "Installing docker-enter... "
 if [ -f "/opt/bin/docker-enter" ]; then
 	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
 else
-	docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter
+	docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter 
 	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
-/usr/bin/docker pull guruvan/docker-skydns
-/usr/bin/docker pull guruvan/flannel-keepalive
-/usr/bin/docker pull shastafareye/docker-skydns-announce
+/usr/bin/docker pull guruvan/docker-skydns && touch /tmp/installed.skydns
+/usr/bin/docker pull guruvan/flannel-keepalive && touch /tmp/installed.keepalive
+/usr/bin/docker pull shastafareye/docker-skydns-announce && touch /tmp/installed.skydns-ann
+
+touch /tmp/installed.coreos-init
+
 # check for /opt/tmp which is expected to be emphemeral0 
 # on amzazon instances that support it. 
 #

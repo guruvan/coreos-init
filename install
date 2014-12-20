@@ -1,5 +1,48 @@
 #!/bin/bash -x
 
+function get_ip () {
+     IF=eth0
+     ETH0_ADDR=
+     while [ 1 ] 
+     do
+       ETH0_ADDR=$(ifconfig $IF | awk '/inet / {print $2}')
+       if [ "$ETH0_ADDR" != "" ]; then
+          break
+       fi
+       sleep .1
+     done
+}
+function set_net () {
+  while [ 1 ]
+  do
+    net=$(etcdctl --no-sync -C http://127.0.0.1:4001 get /coreos.com/network/config)
+    if [ "$net" != "" ]
+    then
+      . /etc/instance-id.env
+      . /etc/environment
+      etcdctl --no-sync -C http://127.0.0.1:4001 \
+        set /skydns/config \
+        '{"dns_addr":"0.0.0.0:53","ttl":300,"domain":"mazaclub", "nameservers": ["10.242.70.10","8.8.8.8:53","8.8.4.4:53"]}'
+      etcdctl --no-sync -C http://127.0.0.1:4001 \
+        set /skydns/mazaclub/etcd/${INSTANCE_ID} \
+        {\"host\":\"${COREOS_PRIVATE_IPV4}\",\"port\":4001}
+     break
+    fi
+    sleep .1
+  done
+}
+
+get_ip
+echo "ETH0_ADDR=${ETH0_ADDR}" >/etc/eth0.env
+rvrse=$(echo $ETH0_ADDR |awk -F"." '{print $(NF-1)"-"$NF}')
+echo "127.0.0.1 aws-worker-${rvrse}" > /etc/hosts
+hostname aws-etcd-${rvrse}
+echo "INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)" > /etc/instance-id.env
+echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf
+
+set_net
+echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf
+
 mkdir -p /opt/bin/
 
 # Install fig
@@ -32,45 +75,49 @@ else
 	docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter
 	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
+/usr/bin/docker pull guruvan/docker-skydns
+/usr/bin/docker pull guruvan/flannel-keepalive
+/usr/bin/docker pull shastafareye/docker-skydns-announce
 # check for /opt/tmp which is expected to be emphemeral0 
 # on amzazon instances that support it. 
 #
-if [ -b /dev/xvdb ] ; then
-        echo "For now we assume that xvdb means AWS, and we haz emphemeral0"
-        #let's hang out for a bit till we see /opt/tmp
-        ot=0
-        until [ ${ot} -eq 1 ] ; do
-           echo "/opt/tmp isn't here yet"
-           if [ -d /opt/tmp ] ; then
-              ot=1
-           fi
-           sleep .3
-        done
+
+#if [ -b /dev/xvdb ] ; then
+#        echo "For now we assume that xvdb means AWS, and we haz emphemeral0"
+#        #let's hang out for a bit till we see /opt/tmp
+#        ot=0
+#        until [ ${ot} -eq 1 ] ; do
+#           echo "/opt/tmp isn't here yet"
+#           if [ -d /opt/tmp ] ; then
+#              ot=1
+#           fi
+#           sleep .3
+#        done
         #and, for real, if we swap more than 1GB we r doin it wrong 
         #swap is for unexpected events, and long long running idle stuff
         #we should be using encrypted swap for later applications - next iteration
-        dd if=/dev/zero of=/opt/tmp/swapfile bs=16M count=64
-        mkswap /opt/tmp/swapfile && swapon /opt/tmp/swapfile
-        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+#        dd if=/dev/zero of=/opt/tmp/swapfile bs=16M count=64
+#        mkswap /opt/tmp/swapfile && swapon /opt/tmp/swapfile
+#        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 # Install btrfs-swapon
-fi
-if [ ! -f /opt/tmp/swapfile ] ;then
-       echo -n "Installing btrfs-swapon... "
-       if [ -f "/opt/bin/btrfs-swapon" ]; then
-             echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
-        else
-	     curl -ksSL https://raw.githubusercontent.com/guruvan/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
-	     chmod +x /opt/bin/btrfs-swapon
-             echo "[$(tput setaf 2) OK $(tput sgr 0)]"
-        fi
+#fi
+#if [ ! -f /opt/tmp/swapfile ] ;then
+#       echo -n "Installing btrfs-swapon... "
+#       if [ -f "/opt/bin/btrfs-swapon" ]; then
+#             echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
+#        else	     
+#             curl -ksSL https://raw.githubusercontent.com/guruvan/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
+#	     chmod +x /opt/bin/btrfs-swapon
+#             echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+#        fi
 
 
 # Create 2Gb swapfile
-	echo -n "Creating swapfile......... "
-	if [ -f "/swapfile" ]; then
-		echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
-	else
-		btrfs-swapon 2147483648 /swapfile > /dev/null
-		echo "[$(tput setaf 2) OK $(tput sgr 0)]"
-	fi
-fi
+#	echo -n "Creating swapfile......... "
+#	if [ -f "/swapfile" ]; then
+#		echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
+#	else
+#		btrfs-swapon 2147483648 /swapfile > /dev/null
+#		echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+#	fi
+#fi

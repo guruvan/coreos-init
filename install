@@ -1,18 +1,19 @@
 #!/bin/bash -x
 
-function get_ip () {
-     IF=eth0
-     ETH0_ADDR=
+get_ip () {
+     IF=docker0
+     DOCKER0_ADDR=
      while [ 1 ] 
      do
-       ETH0_ADDR=$(ifconfig $IF | awk '/inet / {print $2}')
-       if [ "$ETH0_ADDR" != "" ]; then
+       DOCKER0_ADDR=$(ifconfig $IF | awk '/inet / {print $2}')
+       if [ "$DOCKER0_ADDR" != "" ]; then
           break
        fi
        sleep .1
      done
 }
-function set_net () {
+
+set_net () {
   while [ 1 ]
   do
     net=$(etcdctl --no-sync -C http://127.0.0.1:4001 get /coreos.com/network/config)
@@ -32,16 +33,25 @@ function set_net () {
   done
 }
 
+
+
 get_ip
+ETH0_ADDR=$(ifconfig eth0 | awk '/inet / {print $2}')
 echo "ETH0_ADDR=${ETH0_ADDR}" >/etc/eth0.env
 rvrse=$(echo $ETH0_ADDR |awk -F"." '{print $(NF-1)"-"$NF}')
-echo "127.0.0.1 aws-worker-${rvrse}" > /etc/hosts
-hostname aws-etcd-${rvrse}
+echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
+hostname $(hostname)-${rvrse}
 echo "INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)" > /etc/instance-id.env
-echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf
-
+echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf.tmp
+echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.tmp
 set_net
-echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf
+echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.tmp
+sort -uR /opt/resolv.conf.tmp > /opt/resolv.conf
+if [ -e /run/flannel/subnet.env ]
+then
+  cp -v /run/flannel/subnet.env /etc/flannel-subnet.env
+  cp -v /run/docker_opts.env /etc/docker.env
+fi  
 
 mkdir -p /opt/bin/
 

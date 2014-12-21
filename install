@@ -30,7 +30,7 @@ set_net () {
      break
     fi
     sleep .1
-  done
+      done
 }
 
 
@@ -74,88 +74,51 @@ mkdir -p /opt/bin/
 # Install fig
 echo -n "Installing fig............ "
 if [ -f "/opt/bin/fig" ]; then
-	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
+        echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
 else
-	curl -sSL https://github.com/docker/fig/releases/download/1.0.1/fig-Linux-x86_64 > /opt/bin/fig
-	chmod +x /opt/bin/fig
-	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+        curl -sSL https://github.com/docker/fig/releases/download/1.0.1/fig-Linux-x86_64 > /opt/bin/fig
+        chmod +x /opt/bin/fig
+        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
 
 # Install docker-sdlc
 echo -n "Installing docker-sdlc.... "
-if [ -d "/opt/docker-sdlc" ]; then
-	cd /opt/docker-sdlc
-	git fetch --all > /dev/null
-	git reset --hard origin/master > /dev/null
-	echo "[$(tput setaf 4)PULL$(tput sgr 0)]"
+if [ -d "/opt/docker-sdlc" ]
+then
+        cd /opt/docker-sdlc
+        git fetch --all > /dev/null
+        git reset --hard origin/master > /dev/null
+        echo "[$(tput setaf 4)PULL$(tput sgr 0)]"
 else
-	git clone https://github.com/harbur/docker-sdlc.git /opt/docker-sdlc > /dev/null
-	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+        git clone https://github.com/harbur/docker-sdlc.git /opt/docker-sdlc > /dev/null
+        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
 
 # Install docker-enter
 echo -n "Installing docker-enter... "
-if [ -f "/opt/bin/docker-enter" ]; then
-	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
+if [ -f "/opt/bin/docker-enter" ]
+then
+        echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
 else
-	docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter
-	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+        docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter
+        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
 
 if [ ! -f /tmp/installed.skydns ]
 then
-	 /usr/bin/docker pull guruvan/docker-skydns && touch /tmp/installed.skydns
+         /usr/bin/docker pull guruvan/docker-skydns && touch /tmp/installed.skydns
 fi
+
 if [ ! -f /tmp/installed.skydns ]
 then
-  	/usr/bin/docker pull guruvan/flannel-keepalive && touch /tmp/installed.keepalive
+        /usr/bin/docker pull guruvan/flannel-keepalive && touch /tmp/installed.keepalive
+fi
+
 if [ ! -f /tmp/installed.skydns ]
 then
-  	/usr/bin/docker pull shastafareye/docker-skydns-announce && touch /tmp/installed.skydns-ann
+        /usr/bin/docker pull shastafareye/docker-skydns-announce && touch /tmp/installed.skydns-ann
 fi
 
 touch /tmp/installed.coreos-init
-
-# check for /opt/tmp which is expected to be emphemeral0 
-# on amzazon instances that support it. 
-#
-
-#if [ -b /dev/xvdb ] ; then
-#        echo "For now we assume that xvdb means AWS, and we haz emphemeral0"
-#        #let's hang out for a bit till we see /opt/tmp
-#        ot=0
-#        until [ ${ot} -eq 1 ] ; do
-#           echo "/opt/tmp isn't here yet"
-#           if [ -d /opt/tmp ] ; then
-#              ot=1
-#           fi
-#           sleep .3
-#        done
-        #and, for real, if we swap more than 1GB we r doin it wrong 
-        #swap is for unexpected events, and long long running idle stuff
-        #we should be using encrypted swap for later applications - next iteration
-#        dd if=/dev/zero of=/opt/tmp/swapfile bs=16M count=64
-#        mkswap /opt/tmp/swapfile && swapon /opt/tmp/swapfile
-#        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
-# Install btrfs-swapon
-#fi
-#if [ ! -f /opt/tmp/swapfile ] ;then
-#       echo -n "Installing btrfs-swapon... "
-#       if [ -f "/opt/bin/btrfs-swapon" ]; then
-#             echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
-#        else	     
-#             curl -ksSL https://raw.githubusercontent.com/guruvan/coreos-init/master/scripts/btrfs-swapon > /opt/bin/btrfs-swapon
-#	     chmod +x /opt/bin/btrfs-swapon
-#             echo "[$(tput setaf 2) OK $(tput sgr 0)]"
-#        fi
-
-
-# Create 2Gb swapfile
-#	echo -n "Creating swapfile......... "
-#	if [ -f "/swapfile" ]; then
-#		echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
-#	else
-#		btrfs-swapon 2147483648 /swapfile > /dev/null
-#		echo "[$(tput setaf 2) OK $(tput sgr 0)]"
-#	fi
-#fi
+echo "Finished coreos-init install"
+exit

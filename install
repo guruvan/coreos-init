@@ -38,6 +38,11 @@ done
 get_ip
 ETH0_ADDR=$(ifconfig eth0 | awk '/inet / {print $2}')
 echo "ETH0_ADDR=${ETH0_ADDR}" >/etc/eth0.env
+if [ -f /etc/docker.env ]
+then
+  sed -i '/DOCKER0_ADDR/d' /etc/docker.env
+fi
+echo "DOCKER0_ADDR=${DOCKER0_ADDR}" >> /etc/docker.env
 rvrse=$(echo $ETH0_ADDR |awk -F"." '{print $(NF-1)"-"$NF}')
 echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
 #we set our hostnames in our aws launch configs, 

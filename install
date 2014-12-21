@@ -26,11 +26,11 @@ set_net () {
         '{"dns_addr":"0.0.0.0:53","ttl":300,"domain":"mazaclub", "nameservers": ["10.242.70.10","8.8.8.8:53","8.8.4.4:53"]}'
       etcdctl --no-sync -C http://127.0.0.1:4001 \
         set /skydns/${domain}/etcd/${INSTANCE_ID} \
-        {\"host\":\"${COREOS_PRIVATE_IPV4}\",\"port\":4001}
+        \{\"host\":\"${COREOS_PRIVATE_IPV4}\",\"port\":4001\}
      break
     fi
     sleep .1
-      done
+done
 }
 
 

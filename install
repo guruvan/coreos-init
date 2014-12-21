@@ -42,7 +42,7 @@ if [ -f /etc/docker.env ]
 then
   sed -i '/DOCKER0_ADDR/d' /etc/docker.env
 fi
-echo "DOCKER0_ADDR=${DOCKER0_ADDR}" >> /etc/docker.env
+echo "DOCKER0_ADDR=${DOCKER0_ADDR}" >> /tmp/docker.env
 rvrse=$(echo $ETH0_ADDR |awk -F"." '{print $(NF-1)"-"$NF}')
 echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
 #we set our hostnames in our aws launch configs, 
@@ -62,7 +62,7 @@ sort -uR /opt/resolv.conf.tmp > /opt/resolv.conf
 if [ -e /run/flannel/subnet.env ]
 then
   cat /run/flannel/subnet.env  >> /etc/flannel-subnet.env
-  cat /run/docker_opts.env >> /etc/docker.env
+  cat /run/docker_opts.env /tmp/docker.env|sort -u > /etc/docker.env
 fi
 if [ -f /home/core/.dockercfg ]
 then

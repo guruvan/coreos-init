@@ -37,7 +37,10 @@ check_ns () {
      ping -c1 -w3 etcd.${domain} && good_ns=1
      if [ "${good_ns}" -eq 1 ]
      then
-       etcdctl -C http://etcd.${domain}:4001 get $(etcdctl ls --recursive /skydns/${domain}/dns/ns) | awk -F\" '{print $4}'|sort -u >/tmp/etcd-resolv
+       for i in $(etcdctl ls --recursive /skydns/${domain}/dns/ns) 
+       do 
+         etcdctl -C http://etcd.${domain}:4001 get ${i} | awk -F\" '{print $4}'|sort -u i>>/tmp/etcd-resolv
+       done
        while read line
        do
         echo "nameserver ${line}" >> /opt/resolv.conf.tmp

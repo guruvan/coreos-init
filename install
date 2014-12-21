@@ -61,8 +61,8 @@ echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.tmp
 sort -uR /opt/resolv.conf.tmp > /opt/resolv.conf
 if [ -e /run/flannel/subnet.env ]
 then
-  cp -v /run/flannel/subnet.env /etc/flannel-subnet.env
-  cp -v /run/docker_opts.env /etc/docker.env
+  cat /run/flannel/subnet.env  >> /etc/flannel-subnet.env
+  cat /run/docker_opts.env >> /etc/docker.env
 fi
 if [ -f /home/core/.dockercfg ]
 then

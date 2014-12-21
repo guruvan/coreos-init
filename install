@@ -25,7 +25,7 @@ set_net () {
         set /skydns/config \
         '{"dns_addr":"0.0.0.0:53","ttl":300,"domain":"mazaclub", "nameservers": ["10.242.70.10","8.8.8.8:53","8.8.4.4:53"]}'
       etcdctl --no-sync -C http://127.0.0.1:4001 \
-        set /skydns/mazaclub/etcd/${INSTANCE_ID} \
+        set /skydns/${domain}/etcd/${INSTANCE_ID} \
         {\"host\":\"${COREOS_PRIVATE_IPV4}\",\"port\":4001}
      break
     fi
@@ -40,8 +40,15 @@ ETH0_ADDR=$(ifconfig eth0 | awk '/inet / {print $2}')
 echo "ETH0_ADDR=${ETH0_ADDR}" >/etc/eth0.env
 rvrse=$(echo $ETH0_ADDR |awk -F"." '{print $(NF-1)"-"$NF}')
 echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
+#we set our hostnames in our aws launch configs, 
+###hostname=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $(NF-1)}')
 hostname $(hostname)-${rvrse}
 echo "INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)" > /etc/instance-id.env
+domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $NF}')
+## we use a custom dynamic resolv.conf manager that runs along with our flannel-keepalive
+## this provides the salt for that - DNS service is executed as 2 global units, every host has a local 
+## skydns server, and service announcement for ns.dns.$DOMAIN - we keep a constant rotation 
+## with an etcdctl exec-watch updating the resolv.conf. 
 echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf.tmp
 echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.tmp
 set_net
@@ -51,7 +58,16 @@ if [ -e /run/flannel/subnet.env ]
 then
   cp -v /run/flannel/subnet.env /etc/flannel-subnet.env
   cp -v /run/docker_opts.env /etc/docker.env
-fi  
+fi
+if [ -f /home/core/.dockercfg ]
+then
+  cp /home/core/.dockercfg /root
+fi
+if [ -f /etc/ssl/certs/privregistry.${domain} ]
+then
+  mkdir -pv /etc/docker/certs.d/privregistry.${domain} 
+    && cp /etc/ssl/certs/privregistry.${domain} /etc/docker/certs.d/privregistry.${domain}/ca.crt
+fi
 
 mkdir -p /opt/bin/
 
@@ -82,12 +98,21 @@ echo -n "Installing docker-enter... "
 if [ -f "/opt/bin/docker-enter" ]; then
 	echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
 else
-	docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter 
+	docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter
 	echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
-/usr/bin/docker pull guruvan/docker-skydns && touch /tmp/installed.skydns
-/usr/bin/docker pull guruvan/flannel-keepalive && touch /tmp/installed.keepalive
-/usr/bin/docker pull shastafareye/docker-skydns-announce && touch /tmp/installed.skydns-ann
+
+if [ ! -f /tmp/installed.skydns ]
+then
+	 /usr/bin/docker pull guruvan/docker-skydns && touch /tmp/installed.skydns
+fi
+if [ ! -f /tmp/installed.skydns ]
+then
+  	/usr/bin/docker pull guruvan/flannel-keepalive && touch /tmp/installed.keepalive
+if [ ! -f /tmp/installed.skydns ]
+then
+  	/usr/bin/docker pull shastafareye/docker-skydns-announce && touch /tmp/installed.skydns-ann
+fi
 
 touch /tmp/installed.coreos-init
 

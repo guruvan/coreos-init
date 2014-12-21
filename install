@@ -32,7 +32,18 @@ set_net () {
     sleep .1
 done
 }
-
+check_ns () {
+     good_ns=0
+     ping -c1 -w3 etcd.${domain} && good_ns=1
+     if [ "${good_ns}" -eq 1 ]
+     then
+       etcdctl -C http://etcd.${domain}:4001 get $(etcdctl ls --recursive /skydns/${domain}/dns/ns) | awk -F\" '{print $4}'|sort -u >/tmp/etcd-resolv
+       while read line
+       do
+        echo "nameserver ${line}" >> /opt/resolv.conf.tmp
+       done
+     fi
+}
 
 
 get_ip
@@ -57,6 +68,7 @@ domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '
 echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf.tmp
 echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.tmp
 set_net
+check_ns
 echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.tmp
 sort -uR /opt/resolv.conf.tmp > /opt/resolv.conf
 if [ -e /run/flannel/subnet.env ]
@@ -73,6 +85,7 @@ then
   mkdir -pv /etc/docker/certs.d/privregistry.${domain} \
     && cp /etc/ssl/certs/privregistry.${domain} /etc/docker/certs.d/privregistry.${domain}/ca.crt
 fi
+
 
 mkdir -p /opt/bin/
 

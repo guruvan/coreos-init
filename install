@@ -41,11 +41,9 @@ check_ns () {
        while read line
        do
         echo "nameserver ${line}" >> /opt/resolv.conf.tmp
-       done
+       done /tmp/etcd-resolv
      fi
 }
-
-
 get_ip
 ETH0_ADDR=$(ifconfig eth0 | awk '/inet / {print $2}')
 echo "ETH0_ADDR=${ETH0_ADDR}" >/etc/eth0.env
@@ -71,6 +69,19 @@ set_net
 check_ns
 echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.tmp
 sort -uR /opt/resolv.conf.tmp > /opt/resolv.conf
+count=0
+while read s
+do
+  s_g=$(echo ${s}|awk -F"." '{print $NF}')
+  if [ -n "${s_g" ]
+  then count=$((count+1))
+  fi
+done < /opt/resolv.conf
+if [ "$count" -ge 2 ]
+then
+  rm /etc/resolv.conf && cp /opt/resolv.conf /etc/resolv.conf
+  #still not protecting against empty nameserver lines in resolv.conf completely
+fi
 if [ -e /run/flannel/subnet.env ]
 then
   cat /run/flannel/subnet.env  >> /etc/flannel-subnet.env

@@ -96,8 +96,7 @@ then
 fi
 if [ -f /etc/ssl/certs/privregistry.${domain} ]
 then
-  mkdir -pv /etc/docker/certs.d/privregistry.${domain} \
-    && cp /etc/ssl/certs/privregistry.${domain} /etc/docker/certs.d/privregistry.${domain}/ca.crt
+  mkdir -pv /etc/docker/certs.d/privregistry.${domain} && cp /etc/ssl/certs/privregistry.${domain} /etc/docker/certs.d/privregistry.${domain}/ca.crt
 fi
 
 

@@ -61,7 +61,8 @@ echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
 ###hostname=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $(NF-1)}')
 hostname $(hostname)-${rvrse}
 echo "INSTAsort -uR /opt/resolv.conf.etcd >> /opt/resolv.conf.test
-NCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)" > /etc/instance-id.envdomain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $NF}')
+INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)" > /etc/instance-id.env
+domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $NF}')
 ## we use a custom dynamic resolv.conf manager that runs along with our flannel-keepalive
 ## this provides the salt for that - DNS service is executed as 2 global units, every host has a local 
 ## skydns server, and service announcement for ns.dns.$DOMAIN - we keep a constant rotation 

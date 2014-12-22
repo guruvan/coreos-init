@@ -43,7 +43,7 @@ check_ns () {
        done
        while read line
        do
-        echo "nameserver ${line}" >> /opt/resolv.conf.tmp
+        echo "nameserver ${line}" >> /opt/resolv.conf.etcd
        done < /tmp/etcd-resolv
      fi
 }
@@ -66,12 +66,12 @@ domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '
 ## this provides the salt for that - DNS service is executed as 2 global units, every host has a local 
 ## skydns server, and service announcement for ns.dns.$DOMAIN - we keep a constant rotation 
 ## with an etcdctl exec-watch updating the resolv.conf. 
-echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf.tmp
-echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.tmp
+echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf.local
+echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.local
 set_net
 check_ns
-echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.tmp
-sort -uR /opt/resolv.conf.tmp > /opt/resolv.conf
+echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.local
+sort -uR /opt/resolv.conf.etcd > /opt/resolv.conf
 count=0
 while read s
 do
@@ -79,11 +79,15 @@ do
   if [ -n "${s_g}" ]
   then count=$((count+1))
   fi
-done < /opt/resolv.conf
+done < /opt/resolv.conf.etcd
 if [ "$count" -ge 2 ]
 then
+  # save the bootstrap resolv.conf in case dns fails, resolvconf-mgr service 
+  # should replace with this to start or restart skydns services
+  cp /etc/resolv.conf /opt/resolv.conf.bootstrap
   rm /etc/resolv.conf && cp /opt/resolv.conf /etc/resolv.conf
   #still not protecting against empty nameserver lines in resolv.conf completely
+
 fi
 if [ -e /run/flannel/subnet.env ]
 then

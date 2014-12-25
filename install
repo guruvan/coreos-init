@@ -1,4 +1,8 @@
 #!/bin/bash -x
+if [ -f /opt/resolv.conf.local ]
+then
+  rm /opt/resolv.conf.local
+fi
 
 get_ip () {
      IF=docker0
@@ -50,10 +54,6 @@ check_ns () {
 get_ip
 ETH0_ADDR=$(ifconfig eth0 | awk '/inet / {print $2}')
 echo "ETH0_ADDR=${ETH0_ADDR}" >/etc/eth0.env
-if [ -f /etc/docker.env ]
-then
-  sed -i '/DOCKER0_ADDR/d' /etc/docker.env
-fi
 echo "DOCKER0_ADDR=${DOCKER0_ADDR}" >> /etc/docker.env
 rvrse=$(echo $ETH0_ADDR |awk -F"." '{print $(NF-1)"-"$NF}')
 echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
@@ -93,11 +93,6 @@ echo "options timeout:1" >> /opt/resolv.conf.local
   #still not protecting against empty nameserver lines in resolv.conf completely
 
 #fi
-if [ -e /run/flannel/subnet.env ]
-then
-  cat /run/flannel/subnet.env  >> /etc/flannel-subnet.env
-  cat /run/docker_opts.env /tmp/docker.env|sort -u > /etc/docker.env
-fi
 if [ -f /home/core/.dockercfg ]
 then
   cp /home/core/.dockercfg /root

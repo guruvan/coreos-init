@@ -72,7 +72,8 @@ then
   hostname $(hostname)-${rvrse} && touch /opt/tmp/hostname.set
 fi
 #test -n ${ETH0_ADDR} && echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf.local
-
+etcd_pid=$(pgrep etcd)
+test -n ${etcd_pid} && set_net
 if [ -f /home/core/.dockercfg ]
 then
   cp /home/core/.dockercfg /root

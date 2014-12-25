@@ -55,7 +55,7 @@ check_ns () {
 get_ip
 #we set our hostnames in our aws launch configs, 
 ###hostname=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $(NF-1)}')
-if [ ! -f /opt/tmp/hostname.set]
+if [ ! -f /opt/tmp/hostname.set ]
 then
   ETH0_ADDR=$(ifconfig eth0 | awk '/inet / {print $2}')
   echo "ETH0_ADDR=${ETH0_ADDR}" >/etc/eth0.env

@@ -32,7 +32,7 @@ set_net () {
       etcdctl --no-sync -C http://127.0.0.1:4001 \
         set /skydns/${domain}/etcd/${INSTANCE_ID} \
         \{\"host\":\"${COREOS_PRIVATE_IPV4}\",\"port\":4001\}
-      echo "127.0.0.1 etcd.${domain}" >> /etc/hosts
+      echo "${DOCKER0_ADDR} etcd.${domain} $(hostname) " >> /etc/hosts
      break
     fi
     sleep .1

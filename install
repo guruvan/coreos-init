@@ -74,16 +74,14 @@ then
   hostname $(hostname)-${rvrse} && touch /opt/tmp/hostname.set
 fi
 #test -n ${ETH0_ADDR} && echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf.local
-etcd_pid=$(pgrep etcd)
-test -n ${etcd_pid} && set_net
-if [ -f /home/core/.dockercfg ]
-then
-  cp /home/core/.dockercfg /root
-fi
-if [ -f /etc/ssl/certs/privregistry.${domain} ]
-then
-  mkdir -pv /etc/docker/certs.d/privregistry.${domain} && cp /etc/ssl/certs/privregistry.${domain} /etc/docker/certs.d/privregistry.${domain}/ca.crt
-fi
+#etcd_pid=$(pgrep etcd)
+#test -n ${etcd_pid} && set_net
+test -f /etc/etcd-fleet.env || set_net
+test -f /home/core/.dockercfg  && cp /home/core/.dockercfg /root
+test -f /etc/ssl/certs/privregistry.${domain}.crt \
+  && mkdir -pv /etc/docker/certs.d/privregistry.${domain} \
+  && cp /etc/ssl/certs/privregistry.${domain} /etc/docker/certs.d/privregistry.${domain}/ca.crt
+
 
 
 mkdir -p /opt/bin/

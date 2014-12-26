@@ -3,13 +3,15 @@ CoreOS Initialization
 
 This is a script for preparing CoreOS systems automatically. It features the following:
 
+* It sets up a basic environment, adding various environment files we use, primarily for DNS 
+* It ensures that you have eth0 and docker0 setup, and ready for use, writing addresses to .env files
+* It gets a base hostname and domain from AWS metadata
+* It adds ip address info to the hostname so you can tell your cluster members apart
+* It prepares a resolv.conf for use after SkyDNS is up and running on the local host. 
 * It installs [fig](http://www.fig.sh/install.html)
 * It installs [docker-sdlc](https://github.com/harbur/docker-sdlc)
 * It installs [docker-enter](https://github.com/jpetazzo/nsenter/blob/master/docker-enter)
-* It installs [btrfs-swapon](https://github.com/sebastian-philipp/btrfs-swapon)
-* It creates 2Gb swapfile
 
-This will expect you to load a valid .dockercfg for the core user with your cloud-config.
 
 
 To use it, directly on new CoreOS instances:

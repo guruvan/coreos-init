@@ -1,9 +1,7 @@
 #!/bin/bash -x
 source /etc/environment
-if [ -f /opt/resolv.conf.local ]
-then
-  rm /opt/resolv.conf.local
-fi
+test -f /opt/resolv.conf.local && rm /opt/resolv.conf.local
+test -f /opt/tmp/hostname.set && rm /opt/tmp/hostname.set
 
 get_ip () {
      IF=docker0
@@ -68,6 +66,12 @@ then
   echo "INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)" > /etc/instance-id.env
   test -n ${DOCKER0_ADDR} && echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.local
   test -n ${COREOS_PRIVATE_IPV4} && echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.local 
+  while read ns_rr
+    do ns_ip=$(echo ${ns_rr}|awk '{print $2}')
+       test -z ${ns_ip}  || echo "${ns_rr}" >> /opt/resolv.conf.final
+    done</opt/resolv.conf.local
+  # a little circuitous but gives us a backup
+  cp /opt/resolv.conf.final /opt/resolv.conf.local
   echo "search ${domain}" >> /opt/resolv.conf.local
   echo "options rotate" >> /opt/resolv.conf.local
   echo "options timeout:1" >> /opt/resolv.conf.local
@@ -135,6 +139,6 @@ then
 fi
 
 touch /tmp/installed.coreos-init
-test -f /etc/resolv.conf || cp -v /opt/resolv.conf /etc/
+
 echo "Finished coreos-init install"
 exit

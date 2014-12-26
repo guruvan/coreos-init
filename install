@@ -135,5 +135,6 @@ then
 fi
 
 touch /tmp/installed.coreos-init
+test -f /etc/resolv.conf || cp -v /opt/resolv.conf /etc/
 echo "Finished coreos-init install"
 exit

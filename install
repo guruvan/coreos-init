@@ -1,7 +1,6 @@
 #!/bin/bash -x
 source /etc/environment
 test -f /opt/resolv.conf.local && rm /opt/resolv.conf.local
-test -f /opt/tmp/hostname.set && rm /opt/tmp/hostname.set
 
 get_ip () {
      IF=docker0
@@ -55,7 +54,7 @@ domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '
 get_ip
 #we set our hostnames in our aws launch configs, 
 ###hostname=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $(NF-1)}')
-if [ ! -f /opt/tmp/hostname.set ]
+if [ ! -f /opt/resolv.conf.local ]
 then
   test -n ${domain} && echo "DOMAIN=${domain}" > /etc/domain.env
   ETH0_ADDR=$(ifconfig eth0 | awk '/inet / {print $2}')
@@ -75,8 +74,8 @@ then
   echo "search ${domain}" >> /opt/resolv.conf.local
   echo "options rotate" >> /opt/resolv.conf.local
   echo "options timeout:1" >> /opt/resolv.conf.local
-  hostname $(hostname)-${rvrse} && touch /opt/tmp/hostname.set
 fi
+test -f /opt/tmp/hostname.set ||  hostname $(hostname)-${rvrse} && touch /opt/tmp/hostname.set
 #test -n ${ETH0_ADDR} && echo "nameserver ${ETH0_ADDR}" >> /opt/resolv.conf.local
 #etcd_pid=$(pgrep etcd)
 #test -n ${etcd_pid} && set_net

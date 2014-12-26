@@ -1,5 +1,6 @@
 #!/bin/bash -x
 source /etc/environment
+cp /opt/resolv.conf /etc/resolv.conf
 test -f /opt/resolv.conf.local && rm /opt/resolv.conf.local
 
 get_ip () {

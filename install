@@ -64,7 +64,11 @@ then
   test -n ${DOCKER0_ADDR} && echo "DOCKER0_ADDR=${DOCKER0_ADDR}" > /etc/docker.env
   rvrse=$(echo $ETH0_ADDR |awk -F"." '{print $(NF-1)"-"$NF}')
   echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
-  echo "INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)" > /etc/instance-id.env
+  
+  instance=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+  test -n ${instance} || instance="$(hostname)"
+  echo "INSTANCE_ID=${instance}" > /etc/instance-id.env
+  
   test -n ${DOCKER0_ADDR} && echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.local
   test -n ${COREOS_PRIVATE_IPV4} && echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.local 
   while read ns_rr

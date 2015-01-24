@@ -52,6 +52,7 @@ check_ns () {
      fi
 }
 domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $NF}')
+test -n ${domain} || domain=$(cat /etc/local-domain)
 get_ip
 #we set our hostnames in our aws launch configs, 
 ###hostname=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $(NF-1)}')

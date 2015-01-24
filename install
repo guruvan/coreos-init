@@ -52,7 +52,7 @@ check_ns () {
      fi
 }
 domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $NF}')
-test -n ${domain} || domain=$(cat /etc/local-domain)
+test -z ${domain} && domain=$(cat /etc/local-domain)
 get_ip
 #we set our hostnames in our aws launch configs, 
 ###hostname=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $(NF-1)}')
@@ -66,7 +66,7 @@ then
   echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
   
   instance=$(curl http://169.254.169.254/latest/meta-data/instance-id)
-  test -n ${instance} || instance="$(hostname)"
+  test -z ${instance} && instance=$(hostname)
   echo "INSTANCE_ID=${instance}" > /etc/instance-id.env
   
   test -n ${DOCKER0_ADDR} && echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.local

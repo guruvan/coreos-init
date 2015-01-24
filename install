@@ -51,8 +51,14 @@ check_ns () {
        done < /tmp/etcd-resolv
      fi
 }
-domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $NF}')
-test -z ${domain} && domain=$(cat /etc/local-domain)
+if [ -f /etc/local-domain ]
+then
+  domain=$(cat /etc/local-domain)
+  instance="$(hostname).${domain}"
+else 
+  domain=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $NF}')
+  instance=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+fi
 get_ip
 #we set our hostnames in our aws launch configs, 
 ###hostname=$(curl http://169.254.169.254/latest/meta-data/local-hostname|awk -F"." '{print $(NF-1)}')
@@ -64,11 +70,7 @@ then
   test -n ${DOCKER0_ADDR} && echo "DOCKER0_ADDR=${DOCKER0_ADDR}" > /etc/docker.env
   rvrse=$(echo $ETH0_ADDR |awk -F"." '{print $(NF-1)"-"$NF}')
   echo "127.0.0.1 $(hostname)-${rvrse}" > /etc/hosts
-  
-  instance=$(curl http://169.254.169.254/latest/meta-data/instance-id)
-  test -z ${instance} && instance=$(hostname)
   echo "INSTANCE_ID=${instance}" > /etc/instance-id.env
-  
   test -n ${DOCKER0_ADDR} && echo "nameserver ${DOCKER0_ADDR}" >> /opt/resolv.conf.local
   test -n ${COREOS_PRIVATE_IPV4} && echo "nameserver ${COREOS_PRIVATE_IPV4}" >> /opt/resolv.conf.local 
   while read ns_rr

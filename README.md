@@ -14,11 +14,33 @@ This is a script for preparing CoreOS systems automatically. It features the fol
 
 
 
+
+
 To use it, directly on new CoreOS instances:
 
 <pre>
 \curl -sSL https://raw.githubusercontent.com/guruvan/coreos-init/master/install | sudo bash
 </pre>
+
+Or, use the following unit from your cloudconfig:
+```
+    - name: install-coreos-init.service
+      runtime: no
+      command: start
+      content: |
+        [Unit]
+        Description=Install from github.com/guruvan/coreos-init
+        After=docker.service flanneld.service
+        Requires=docker.service flanneld.service
+        ConditionPathExists=!/tmp/installed.coreos-init
+        [Service]
+        User=root
+        Type=oneshot
+        RemainAfterExit=yes
+        TimeoutStartSec=900
+        ExecStart=/bin/sh -c "curl -ksSL https://raw.githubusercontent.com/guruvan/coreos-init/master/install |/bin/bash -x "
+        ExecStop=/bin/sh -c "rm /opt/tmp/hostname.set"
+```
 
 
 Output will be:

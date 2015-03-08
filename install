@@ -96,12 +96,15 @@ test -f /etc/ssl/certs/privregistry.${domain}.crt \
 
 
 mkdir -p /opt/bin/
-
+# Install docker-enter
+echo -n "Installing docker-enter... "
+if [ ! -f "/opt/bin/docker-enter" ]; then
+        docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter
+        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
+fi
 # Install fig
 echo -n "Installing fig............ "
-if [ -f "/opt/bin/fig" ]; then
-        echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
-else
+if [ ! -f "/opt/bin/fig" ]; then
         curl -sSL https://github.com/docker/fig/releases/download/1.0.1/fig-Linux-x86_64 > /opt/bin/fig
         chmod +x /opt/bin/fig
         echo "[$(tput setaf 2) OK $(tput sgr 0)]"
@@ -120,15 +123,7 @@ fi
 #        echo "[$(tput setaf 2) OK $(tput sgr 30)]"
 #fi
 
-# Install docker-enter
-echo -n "Installing docker-enter... "
-if [ -f "/opt/bin/docker-enter" ]
-then
-        echo "[$(tput setaf 4)SKIP$(tput sgr 0)]"
-else
-        docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter && docker rmi jpetazzo/nsenter
-        echo "[$(tput setaf 2) OK $(tput sgr 0)]"
-fi
+
 
 if [ ! -f /tmp/installed.skydns ]
 then

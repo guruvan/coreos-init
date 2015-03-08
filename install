@@ -99,7 +99,7 @@ mkdir -p /opt/bin/
 # Install docker-enter
 echo -n "Installing docker-enter... "
 if [ ! -f "/opt/bin/docker-enter" ]; then
-        docker run -it --rm -v /opt/bin:/target jpetazzo/nsenter
+        docker run --rm -v /opt/bin:/target jpetazzo/nsenter
         echo "[$(tput setaf 2) OK $(tput sgr 0)]"
 fi
 # Install fig
